@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: catalog-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/catalog/**
+        - id: movie-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/movies/**
+#eureka
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: true
