@@ -2,70 +2,34 @@ server:
   port: 8082
 
 spring:
+  application:
+    name: catalog-service
   data:
     mongodb:
-      host: localhost
+      authentication-database: admin
+      username: root
+      password: root
+      database: db_catalogs
       port: 27017
-      uri: mongodb://localhost/genre
-  rabbitmq:
-    username: guest
-    password: guest
-    host: localhost
-    port: 5672
-  zipkin:
-    base-url: http://localhost:9411/
-    enabled: true
+      host: mongodb
 
-message: hello from catalog-service
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
-queue:
-  movie:
-    name: MovieQueue
-  serie:
-    name: SerieQueue
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
   info:
     env:
       enabled: true
-
-info:
-  app:
-    name: catalog-service
-    description: Info del servicio Catalog
-    version: 1.0.0
-
-#config eureka client
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    #solo config para los clientes de eureka
-  instance:
-    hostname: localhost
-    instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
-
-#config circuit breaker y reintentos
-resilience4j:
-  circuitbreaker:
-    instances: 
-      catalog: 
-        allow-health-indicator-to-fail: false
-        register-health-indicator: true
-        sliding-window-type: COUNT_BASED
-        sliding-window-size: 5
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 15000
-        permitted-number-of-calls-in-half-open-state: 3
-        automatic-transition-from-open-to-half-open-enabled: true
-  retry:
-    instances:
-      catalog:
-        max-atempts: 3
-        wait-duration: 1000
-        retry-exceptions:
-          - feign.FeignException$InternalServerError
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
