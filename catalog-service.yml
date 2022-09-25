@@ -1,26 +1,28 @@
 server:
-  port: 8082
+  port: 8002
 
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password: sa
-  jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      uri: mongodb://localhost/genre
+  rabbitmq:
+    username: guest
+    password: guest
+    host: localhost
+    port: 5672
+  zipkin:
+    base-url: http://localhost:9411/
+    enabled: true
 
 message: hello from catalog-service
+
+queue:
+  movie:
+    name: MovieQueue
+  serie:
+    name: SerieQueue
 
 management:
   endpoints:
@@ -46,3 +48,24 @@ eureka:
   instance:
     hostname: localhost
     instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+
+#config circuit breaker y reintentos
+resilience4j:
+  circuitbreaker:
+    instances: 
+      catalog: 
+        allow-health-indicator-to-fail: false 
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15000
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  retry:
+    instances:
+      catalog:
+        max-atempts: 3
+        wait-duration: 1000
+        retry-exceptions:
+          - feign.FeignException$InternalServerError 
