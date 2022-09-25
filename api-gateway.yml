@@ -4,29 +4,39 @@ server:
 spring:
   cloud:
     gateway:
+      default-filters:
+        - name: LoggingFilter
       routes:
-        - id: catalog-service
-          uri: lb://catalog-service
-          predicates:
-            - Path=/catalog/**
-        - id: movie-service
+        - id: movieRoute
           uri: lb://movie-service
           predicates:
             - Path=/movies/**
-        - id: series-service
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: moviesService
+                fallbackUri: forward:/fallback/movies
+        - id: catalogRoute
+          uri: lb://catalog-service
+          predicates:
+            - Path=/catalogs/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: catalogService
+                fallbackUri: forward:/fallback/catalogs
+        - id: seriesRoute
           uri: lb://series-service
           predicates:
             - Path=/series/**
-  zipkin:
-    base-url: http://localhost:9411/
-    enabled: true
-#eureka
-eureka:
-  client:
-   # fetch-registry: true
-   # register-with-eureka: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    hostname: localhost
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: seriesService
+                fallbackUri: forward:/fallback/series
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: 1.0.0
+    description: API Gateway
