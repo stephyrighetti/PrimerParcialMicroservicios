@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: serie-service
+    name: series-service
   data:
     mongodb:
       authentication-database: admin
@@ -17,7 +17,7 @@ spring:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
 
-#Actuator: Monitoreando la salud de nuestros microservicios
+
 management:
   info:
     env:
